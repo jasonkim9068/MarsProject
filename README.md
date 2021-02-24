@@ -29,6 +29,6 @@ MAKE SURE ADD "Images" folder in prjoect.
 5. Click "Load" button. All the image will disply in datatable with some description<br/>
 ![image](https://user-images.githubusercontent.com/69368818/109009015-9d75ed00-7673-11eb-9b69-5991ed665c3f.png)
 <br/>
-6. All image file will save on Image folder<br/>
+6. All image file will save on Image folder (local folder)<br/>
 ![image](https://user-images.githubusercontent.com/69368818/109009082-b5e60780-7673-11eb-8772-b7521741585b.png)
 <br/>
