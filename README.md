@@ -1,6 +1,6 @@
 # MarsProject
 
-.NET CORE VERSION : 3.1
+.NET CORE VERSION : 3.1 \n
 Visual Studio 2019
 Window Docker
 
