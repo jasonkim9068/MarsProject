@@ -1,0 +1,103 @@
+﻿
+<div class="card" id="pnSubjectDataImport" style="margin-bottom: 50px;">
+    <div class="card-header">
+        <h1 class="card-title"> Mars Rover API Coding Exercise</h1>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="form-group">
+                <input type="file" required accept=".txt" class="inputfile col-md-10" id="file" size="25" />
+            </div>
+        </div>
+        <button id="btnLoad" type="button" class="btn btn-primary btn-small">Load</button>
+    </div>
+</div>
+
+<table style="width: 100%" class="display" id="processRequests" cellspacing="0">
+    <thead class="table-style">
+        <tr class="">
+            <th>Id</th>
+            <th>sol</th>
+            <th>img_src</th>
+            <th>image</th>
+            <th>earth_date</th>
+        </tr>
+    </thead>
+    <tbody class="table-style"></tbody>
+</table>
+
+
+@section Scripts
+{
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src=" https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        var LocateRequest = {
+            loadData: function (data) {
+                var table = $('#processRequests').dataTable({
+                    destroy: true,
+                    scrollX: true,
+                    pagingType: 'full_numbers',
+                    order: [[4, "asc"]],
+                    lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, 'All']],
+                    pageLength: -1,
+                    dom: '<"html5buttons"><"floatRight" B>lTfgitp',
+                    select: {
+                        style: 'multi+shift',
+                        info: true,
+                        selector: 'td:first-child'
+                    },
+                    bSortClasses: false,
+                    data: data,
+                    columnDefs: [
+                        {
+                            targets: 2,
+                            className: 'text-center',
+                            render: function (data, type, row) {
+                                return '<a href="' + data + '"target="_blank"> OPEN </a>';
+                            }
+                        },
+                        {
+                            targets: 3,
+                            className: 'text-center',
+                            render: function (data, type, row) {
+                                return '<img src="' + data + '"width = 150" height="70">';
+                            }
+                        }
+                    ],
+                    columns: [
+                        { data: 'id' },
+                        { data: 'sol' },
+                        { data: 'img_src' },
+                        { data: 'img_src' },
+                        { data: 'earth_date' }
+                    ]
+
+                });
+            }
+        }
+        $('#btnLoad').on('click', function () {
+            $.ajax({
+                url: "/Home/GetFormData",
+                type: "POST",
+                data: function () {
+                    var data = new FormData();
+                    data.append("file", jQuery("#file").get(0).files[0]);
+                    return data;
+                }(),
+                contentType: false,
+                processData: false,
+                success: function (result) {
+                    if (result.success) {
+                        processRequests = result.data;
+                        LocateRequest.loadData(processRequests);
+                        return true;
+                    }
+
+                }
+            });
+        })
+    </script>
+}
+
