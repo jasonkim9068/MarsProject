@@ -9,8 +9,8 @@ namespace MarsProject.Interfaces
     public interface INasaPhotosService
     {
         List<RequestDate> GetValidDate(IFormFile file);
+        void GetList(List<RequestDate> list, List<Photo> photos);
 
         void SaveImage(List<Photo> photos);
-        void SumResult(List<Photo> photos, HttpResponseMessage response);
     }
 }

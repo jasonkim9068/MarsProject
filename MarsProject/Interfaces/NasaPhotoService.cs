@@ -4,19 +4,50 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace MarsProject.Interfaces
 {
     public class NasaPhotoService : INasaPhotosService
     {
         private readonly ILogger<NasaPhotoService> _logger;
+        private readonly IConfiguration _appSettings;
 
-        public NasaPhotoService(ILogger<NasaPhotoService> log)
+        public NasaPhotoService(ILogger<NasaPhotoService> log, IConfiguration appSettings)
         {
             _logger = log;
+            _appSettings = appSettings;
+        }
+
+        public void GetList(List<RequestDate> list, List<Photo> photos)
+        {
+            var formats = CultureInfo.CurrentCulture.DateTimeFormat.GetAllDateTimePatterns().ToList();
+            formats.Add("MMMM dd, yyyy");
+            formats.Add("MMM-dd-yyyy");
+
+            foreach (var request in list)
+            {
+                if (TryParseExact(request, formats, out var dateVal))
+                {
+                    //get API address
+                    var apiUrl =
+                        $"{_appSettings["BaseUrl"]}?api_key={_appSettings["APIKey"]}&earth_date={dateVal.Year}-{dateVal.Month}-{dateVal.Day}";
+
+                    using var response = new HttpClient { }.GetAsync(apiUrl).Result;
+                    response.EnsureSuccessStatusCode();
+
+                    //if API response success then add to array
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        SumResult(photos, response);
+                    }
+                }
+            }
         }
 
         public List<RequestDate> GetValidDate(IFormFile file)
@@ -60,7 +91,15 @@ namespace MarsProject.Interfaces
                 }
         }
 
-        public void SumResult(List<Photo> photos, HttpResponseMessage response)
+        public bool TryParseExact(RequestDate request, List<string> formats, out DateTime dateVal)
+        {
+            var date = DateTime.TryParseExact(request.Date, formats.ToArray(), CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out dateVal);
+            
+            return date;
+        }
+
+        void SumResult(List<Photo> photos, HttpResponseMessage response)
         {
             var content = response.Content.ReadAsStringAsync().Result;
             //deserialize object

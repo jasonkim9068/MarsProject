@@ -47,32 +47,10 @@ namespace MarsProject.Controllers
             //get valid dates from text file
             List<RequestDate> requestDates = _nasaPhotoService.GetValidDate(file);
 
-            //add all possilbe date format
-            var formats = CultureInfo.CurrentCulture.DateTimeFormat.GetAllDateTimePatterns().ToList();
-            formats.Add("MMMM dd, yyyy");
-            formats.Add("MMM-dd-yyyy");
-
             try
             {
                 if (requestDates.Count > 0)
-                    foreach (var request in requestDates)
-                    {   
-                        if (DateTime.TryParseExact(request.Date, formats.ToArray(), CultureInfo.InvariantCulture,
-                                              DateTimeStyles.None, out DateTime dateVal))
-                        {
-                            //get API address
-                            var apiUrl = $"{_appSettings["BaseUrl"]}?api_key={_appSettings["APIKey"]}&earth_date={dateVal.Year}-{dateVal.Month}-{dateVal.Day}";
-
-                            using var response = new HttpClient { }.GetAsync(apiUrl).Result;
-                            response.EnsureSuccessStatusCode();
-
-                            //if API response success then add to array
-                            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                            {
-                                _nasaPhotoService.SumResult(photos, response);
-                            }
-                        }
-                    }
+                    _nasaPhotoService.GetList(requestDates, photos);
                 else
                 {
                     message.AppendFormat("No records exists");
@@ -81,6 +59,10 @@ namespace MarsProject.Controllers
                     return Json(new { success = false, data = photos, message = message.ToString() });
 
                 }
+
+                if (photos.Count > 0)
+                    // save all image to local path (C:\Users\Jason Kim\source\repos\MarsProject\MarsProject\Images)
+                    _nasaPhotoService.SaveImage(photos);
             }
             catch(Exception ex)
             {
@@ -88,12 +70,9 @@ namespace MarsProject.Controllers
                 return Json(new { success = false, data = photos, message = message.ToString() });
             }
 
-            if (photos.Count > 0)
-            // save all image to local path (C:\Users\Jason Kim\source\repos\MarsProject\MarsProject\Images)
-            _nasaPhotoService.SaveImage(photos);
-
             return Json(new { success = true, data = photos });
         }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
