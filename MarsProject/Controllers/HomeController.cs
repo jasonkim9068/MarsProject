@@ -1,30 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+﻿using MarsProject.Interfaces;
 using MarsProject.Models;
 using Microsoft.AspNetCore.Http;
-using System.Globalization;
-using System.Net.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
-using Microsoft.Extensions.Configuration;
-using MarsProject.Interfaces;
 
 namespace MarsProject.Controllers
 {
     public class HomeController : Controller
     {
         private readonly INasaPhotosService _nasaPhotoService;
-        private readonly IConfiguration _appSettings;
         private readonly ILogger _logger;
 
-        public HomeController(INasaPhotosService nasaPhotoService, IConfiguration appSettings, ILogger<HomeController> log)
+        public HomeController(INasaPhotosService nasaPhotoService, ILogger<HomeController> log)
         {
             _logger = log;
             _nasaPhotoService = nasaPhotoService;
-            _appSettings = appSettings;
 
         }
 
@@ -57,7 +51,6 @@ namespace MarsProject.Controllers
                     _logger.LogError("No records exists");
 
                     return Json(new { success = false, data = photos, message = message.ToString() });
-
                 }
 
                 if (photos.Count > 0)
@@ -66,7 +59,8 @@ namespace MarsProject.Controllers
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex, "Unknown error occurred .");
+                message.AppendFormat("Unknown error occurred.");
+                _logger.LogError(ex, "Unknown error occurred.");
                 return Json(new { success = false, data = photos, message = message.ToString() });
             }
 

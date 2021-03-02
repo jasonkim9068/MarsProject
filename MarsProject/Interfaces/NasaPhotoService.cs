@@ -38,11 +38,11 @@ namespace MarsProject.Interfaces
                     var apiUrl =
                         $"{_appSettings["BaseUrl"]}?api_key={_appSettings["APIKey"]}&earth_date={dateVal.Year}-{dateVal.Month}-{dateVal.Day}";
 
-                    using var response = new HttpClient { }.GetAsync(apiUrl).Result;
+                    using var response = new HttpClient().GetAsync(apiUrl).Result;
                     response.EnsureSuccessStatusCode();
 
                     //if API response success then add to array
-                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
                         SumResult(photos, response);
                     }
@@ -55,14 +55,12 @@ namespace MarsProject.Interfaces
             var requestDates = new List<RequestDate>();
             try
             {
-                using (StreamReader reader = new StreamReader(file.OpenReadStream()))
-                {
-                    while (reader.Peek() >= 0)
-                        requestDates.Add(new RequestDate()
-                        {
-                            Date = reader.ReadLine()
-                        });
-                }
+                using StreamReader reader = new StreamReader(file.OpenReadStream());
+                while (reader.Peek() >= 0)
+                    requestDates.Add(new RequestDate()
+                    {
+                        Date = reader.ReadLine()
+                    });
             }
             catch (Exception ex)
             {
@@ -74,9 +72,9 @@ namespace MarsProject.Interfaces
         public void SaveImage(List<Photo> photos)
         {
             if(photos.Count > 0)
-            foreach (Photo image in photos)
-                using (WebClient sendData = new WebClient())
+                foreach (Photo image in photos)
                 {
+                    using WebClient sendData = new WebClient();
                     try
                     {
                         var fileName = image.Earth_date+ "_" + image.Id.ToString();
