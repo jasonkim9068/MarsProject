@@ -38,16 +38,14 @@ namespace MarsProject.Controllers
             var photos = new List<Photo>();
             var message = new StringBuilder();
 
-           
-
             try
-            {
-                 //get valid dates from text file
-                 if (file == null)
-                 {
-                     message.AppendFormat("No text file selected. ");
-                     return Json(new { success = false, data = photos, message = message.ToString() });
-                 }
+            {   //get valid dates from text file
+                if (file == null)
+                {
+                    message.AppendFormat("No text file selected. ");
+                    return Json(new { success = false, data = photos, message = message.ToString() });
+                }
+
                 List<RequestDate> requestDates = _nasaPhotoService.GetValidDate(file);
 
                 if (requestDates.Count > 0)

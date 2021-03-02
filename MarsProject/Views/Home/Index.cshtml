@@ -86,7 +86,8 @@
                 $('#errorMessage').html(text);
             }
         }
-        $('#btnLoad').on('click', function() {
+        $('#btnLoad').on('click', function () {
+
             $.ajax({
                 url: "/Home/GetFormData",
                 type: "POST",
