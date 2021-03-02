@@ -75,9 +75,7 @@ namespace MarsProject.Controllers
                     }
                 else
                 {
-                    message.Append("<div class='field-validation-error'>");
                     message.AppendFormat("No records exists");
-                    message.Append("</div>");
                     _logger.LogError("No records exists");
 
                     return Json(new { success = false, data = photos, message = message.ToString() });
