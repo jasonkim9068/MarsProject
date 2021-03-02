@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using MarsProject.Models;
 using Microsoft.AspNetCore.Http;
 using System.Globalization;
-using Newtonsoft.Json;
 using System.Net.Http;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using MarsProject.Interfaces;
 
@@ -18,7 +18,7 @@ namespace MarsProject.Controllers
     {
         private readonly INasaPhotosService _nasaPhotoService;
         private readonly IConfiguration _appSettings;
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger _logger;
 
         public HomeController(INasaPhotosService nasaPhotoService, IConfiguration appSettings, ILogger<HomeController> log)
         {
@@ -42,7 +42,8 @@ namespace MarsProject.Controllers
         public JsonResult GetFormData(IFormFile file)
         {
             var photos = new List<Photo>();
-            
+            var message = new StringBuilder();
+
             //get valid dates from text file
             List<RequestDate> requestDates = _nasaPhotoService.GetValidDate(file);
 
@@ -62,32 +63,31 @@ namespace MarsProject.Controllers
                             //get API address
                             var apiUrl = $"{_appSettings["BaseUrl"]}?api_key={_appSettings["APIKey"]}&earth_date={dateVal.Year}-{dateVal.Month}-{dateVal.Day}";
 
-                            using (var response = new HttpClient { }.GetAsync(apiUrl).Result)
+                            using var response = new HttpClient { }.GetAsync(apiUrl).Result;
+                            response.EnsureSuccessStatusCode();
+
+                            //if API response success then add to array
+                            if (response.StatusCode == System.Net.HttpStatusCode.OK)
                             {
-
-                                response.EnsureSuccessStatusCode();
-
-                                //if API response success then add to array
-                                if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                                {
-                                    _nasaPhotoService.SumResult(photos, response);
-                                }
-                                else
-                                {
-                                    return null;
-                                }
-
+                                _nasaPhotoService.SumResult(photos, response);
                             }
                         }
                     }
                 else
                 {
-                    return null;
+                    message.Append("<div class='field-validation-error'>");
+                    message.AppendFormat("No records exists");
+                    message.Append("</div>");
+                    _logger.LogError("No records exists");
+
+                    return Json(new { success = false, data = photos, message = message.ToString() });
+
                 }
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex, "Unknown error occured .");
+                _logger.LogError(ex, "Unknown error occurred .");
+                return Json(new { success = false, data = photos, message = message.ToString() });
             }
 
             if (photos.Count > 0)
